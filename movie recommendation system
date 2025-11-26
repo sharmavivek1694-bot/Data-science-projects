@@ -1,0 +1,69 @@
+# Simple Movie Recommendation System using Machine Learning
+# Content-Based Filtering with Cosine Similarity
+
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# ----------------------------------
+# Sample Movie Dataset
+# ----------------------------------
+data = {
+    'title': [
+        'Avengers', 'Iron Man', 'Thor', 'Captain America', 'Titanic',
+        'The Notebook', 'Interstellar', 'Inception', 'The Conjuring', 'Annabelle'
+    ],
+    'genre': [
+        'Action Sci-Fi Superhero',
+        'Action Sci-Fi Superhero',
+        'Action Fantasy Superhero',
+        'Action War Superhero',
+        'Romance Drama',
+        'Romance Drama',
+        'Sci-Fi Space Adventure',
+        'Sci-Fi Thriller Mystery',
+        'Horror Supernatural',
+        'Horror Supernatural'
+    ]
+}
+
+movies = pd.DataFrame(data)
+
+# ----------------------------------
+# Convert Text to Vectors
+# ----------------------------------
+vectorizer = CountVectorizer()
+genre_matrix = vectorizer.fit_transform(movies['genre'])
+
+# ----------------------------------
+# Similarity Calculation
+# ----------------------------------
+similarity = cosine_similarity(genre_matrix)
+
+# ----------------------------------
+# Recommendation Function
+# ----------------------------------
+def recommend_movie(movie_name, top_n=3):
+    if movie_name not in movies['title'].values:
+        return "Movie not found in database"
+
+    idx = movies[movies['title'] == movie_name].index[0]
+    sim_scores = list(enumerate(similarity[idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    sim_scores = sim_scores[1:top_n+1]
+
+    recommended_movies = [movies.iloc[i[0]]['title'] for i in sim_scores]
+    return recommended_movies
+
+# ----------------------------------
+# Testing the System
+# ----------------------------------
+print("\nRecommended movies for 'Avengers':")
+print(recommend_movie('Avengers'))
+
+print("\nRecommended movies for 'Titanic':")
+print(recommend_movie('Titanic'))
+
+print("\nRecommended movies for 'The Conjuring':")
+print(recommend_movie('The Conjuring'))
+
